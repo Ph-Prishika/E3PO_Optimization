@@ -36,7 +36,22 @@ In our proposed methods, we use the following setting parameters for the encoder
 Here, qp_list is a list of quantization parameters, and [0] is used to get the first value from the list, which is then assigned to qp.
 The ffmpeg command used for encoding the destination video is updated to include CRF encoding parameters.The -crf option is added to specify the CRF value obtained from the qp_list. In our proposed method, it utilizes CRF dynamically, allowing it to adjust the compression level based on the desired output quality automatically. By using CRF, you can achieve better control over video quality without specifying a fixed bitrate, resulting in more efficient compression and improved resolution.
 
-# Quick Start
+Discussion about the Proposed Method Result and Limitations:
 
-## Code & Dataset
-1. Download E3PO code
+While the proposed method offers several advantages over the original framework, it's essential to consider potential limitations and areas for further improvement.
+
+Some points for discussion include:
+
+1. Parameter Sensitivity: Despite the benefits of CRF and optimized encoding
+parameters, the effectiveness of the proposed method may depend on the
+careful tuning of these parameters. Fine-tuning CRF values and other
+encoding settings may be necessary to achieve the desired balance between
+compression and quality for different streaming scenarios.
+
+3. Hardware Dependency: The performance of the proposed method may vary
+depending on the hardware capabilities and resource constraints of the
+streaming environment. Compatibility testing and optimization efforts are
+required to ensure consistent performance across different hardware
+configurations and platforms.
+
+There is always room for improvement.
