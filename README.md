@@ -12,117 +12,31 @@ To simulate a streaming approach, the ***video pre-processor*** first segments t
 
 ![](/docs/Framework.jpg "e3po_framework")
 
+# Proposed method
+The proposed method focuses on fine-tuning the video encoder parameters to optimize the encoding process within the framework. The detailed description of the modified method.
 
+Utilization of Constant Rate Factor (CRF): In our proposed method, instead of directly specifying the QP values for encoding, the modified method employs the Constant Rate Factor (CRF) approach. CRF dynamically adjusts the compression
+level based on the desired output quality, ensuring consistent visual quality across encoded videos while optimizing file size. By utilizing CRF, the encoding process becomes more adaptive and efficient, resulting in improved compression performance and enhanced video quality.
+
+Optimized Encoding Command: The encode_dst_video function constructs an optimized ffmpeg command tailored to the chosen encoding settings. This command is designed to maximize encoding performance and resource utilization, thereby improving overall efficiency and quality of the encoding process. By optimizing the encoding command, the modified method ensures optimal utilization of hardware resources and delivers better compression quality with reduced file sizes.
+
+Support for Encoding Parameters: Our proposed method expands the capability of the encoder to accommodate a broader range of encoding parameters. These parameters include the type of encoder, preset settings, Group of Pictures (GOP) size, and the Quality Parameter (QP) list. This enhancement provides users with more flexibility and control over the encoding process, allowing them to tailor it according to specific streaming requirements and preferences.
+
+# Experimental Setup
+In our proposed methods, we use the following setting parameters for the encoder, specifically focusing on the Constant Rate Factor (CRF) method.
+
+○ encoder: Specifies the video encoder to be used. In this case, it defaults to libx264, which is a widely used H.264 encoder.
+
+○ preset: Defines the encoding preset, which determines the trade-off between encoding speed and compression efficiency. The default value is slow for better compression efficiency,( indicating a slower encoding process that typically results in better compression.
+
+○ gop: Sets the Group of Pictures (GOP) size. GOP is a sequence of consecutive frames that starts with a keyframe. A smaller GOP size can improve video quality but may increase file size.
+
+○ qp: Stands for Quantization Parameter. It's a value used in quantization, which determines the level of compression applied to each frame. Lower values result in better quality but larger file sizes.
+
+Here, qp_list is a list of quantization parameters, and [0] is used to get the first value from the list, which is then assigned to qp.
+The ffmpeg command used for encoding the destination video is updated to include CRF encoding parameters.The -crf option is added to specify the CRF value obtained from the qp_list. In our proposed method, it utilizes CRF dynamically, allowing it to adjust the compression level based on the desired output quality automatically. By using CRF, you can achieve better control over video quality without specifying a fixed bitrate, resulting in more efficient compression and improved resolution.
 
 # Quick Start
 
 ## Code & Dataset
 1. Download E3PO code
-```
-git clone https://github.com/bytedance/E3PO.git
-```
-
-2. Video Source<br>
-Prepare a 360° video (which is not included in E3PO repo), rename and place it at /e3po/source/video/[sample].mp4. Note that the file name and video attributions should match the configurations listed in e3po/e3po.yml.  We have provided a sample video for particpants of 2024 MMSys Grand Challenge.
-
-
-3. Motion Trace<br>
-Prepare a motion trace file and place it at /e3po/source/motion_trace/[motion_trace].log. Note that E3PO has provided a sample file. If you want to use a different one, you can generate one similarly to that from [360VidStr](https://github.com/360VidStr/A-large-dataset-of-360-video-user-behaviour/blob/main/AggregatedDataset/7.txt).
-
-
-## Execute commands
-To simulate the streaming process, three terminal commands need to be executed sequentially. For example, with the sample simulation E1 we have provided in the project, the following commands should be executed. Note that the approach name as well as the approach type (on_demand or transcoding) should be specified.
-
-1. Run the [make_preprocessing.py](e3po/make_preprocessing.py) script (***video pre-processor*** module)
-```
-python ./e3po/make_preprocessing.py -approach_name erp -approach_type on_demand
-```
-Corresponding results can be found at
-```
-|---e3po
-    |---source
-        |---video
-            |---[group_*]
-                |---[video_*]
-                    |---[erp]
-                        |---video_size.json
-                        |---dst_video_folder
-                            |---chunk_***_tile_***.mp4
-    |---log
-        |---[group_*]
-            |---[video_*]
-                |---erp_make_preprocessing.log
-```
-
-2. Run the [make_decision.py](./e3po/make_decision.py) script (***streaming simulator*** module)
-```
-python ./e3po/make_decision.py -approach_name erp -approach_type on_demand
-```
-Corresponding results can be found at
-```
-|---e3po
-    |---result
-        |---[group_*]
-            |---[video_*]
-                |---[erp]
-                    |---decision.json
-    |---log
-        |---[group_*]
-            |---[video_*]
-                |---erp_make_decision.log
-```
-
-3. Run the [make_evaluation.py](./e3po/make_evaluation.py) script (***system evaluator*** module)
-```
-python ./e3po/make_evaluation.py -approach_name erp -approach_type on_demand
-```
-
-Corresponding results can be found at 
-```
-|---e3po
-    |---result
-        |---[group_*]
-            |---[video_*]
-                |---[erp]
-                    |---evaluation.json
-                    |---output_frames
-                        |---xxx.png
-                        |---output.mp4
-    |---log
-        |---[group_*]
-            |---[video_*]
-                |---erp_make_evaluation.log
-```
-
-## Examples
-We have implemented eight simple but typical approaches, with their detailed descriptions shown in the following table.
-
-|  Name             | Projection | Background Stream |  Tiling | Resolution |
-|  ----             | ----       | ----              | ----    | ----       |
-|  E1               | ERP        | w/o               | 6x6     | -          |
-|  C1               | CMP        | w/o               | 6x6     | -          |
-|  C2               | CMP        | w/                | 6x6     | -          |
-|  C3               | CMP        | w/                | 6x12    | -          |
-|  A1               | EAC        | w/                | 6x12    | -          |
-|  F1 (Freedom)     | ERP        | w/o               | 1x1     | 1680x1120  |
-|  F2 (Freedom)     | ERP        | w/o               | 1x1     | 2400x2176  |
-|  Full             | ERP        | w/o               | 1x1     | -          |
-
-
-The visual comparison results of these eight approaches are illustrated as the following figure.
-
-![](/docs/comparison.jpg "comparison_results")
-
-
-For more details, please refer to [Tutorial.md](./docs/Tutorial.md).
-
-
-# Contributes
-We welcome researchers to simulate their own streaming systems using E3PO and submit their implementation back to this project, so that the community can better compare the performance of different solutions. Users making contributions to E3PO shall meet the following two requirements:
-
-- The submitted code should be reviewed by the E3PO group.
-- The submitted code should follow the [GPL 2.0 License](./COPYING) adopted by E3PO.
-
-
-# License
-[GPL 2.0 License](./COPYING)
