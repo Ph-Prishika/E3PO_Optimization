@@ -112,23 +112,23 @@ def update_chunk_info(settings, chunk_idx):
 
 def encode_dst_video(settings, dst_video_folder, encoding_params, user_video_spec):
     """
-    Encode the preprocessed frames into video.
+    Encode the preprocessed frames into video with optimized encoding parameters.
 
     Parameters
     ----------
     settings: dict
-        configuration information of the approach
+        Configuration information of the approach.
     dst_video_folder: str
-        path of the preprocessed video frames
+        Path of the preprocessed video frames.
     encoding_params: dict
-        encoding parameters provided by E3PO
+        Encoding parameters provided by E3PO.
     user_video_spec: dict
-        a dictionary recording user specific information
+        A dictionary recording user specific information.
 
     Returns
     -------
     dst_video_uri: str
-        video uri (uniform resource identifier) of the encoded video
+        Video URI (Uniform Resource Identifier) of the encoded video.
     """
 
     if settings.approach_mode == "on_demand":
@@ -141,22 +141,32 @@ def encode_dst_video(settings, dst_video_folder, encoding_params, user_video_spe
     elif settings.approach_mode == "transcoding":
         result_video_name = settings.approach_folder_name
     else:
-        raise ValueError("error when read the approach mode, which should be on_demand or transcoding!")
+        raise ValueError("Error when reading the approach mode, which should be on_demand or transcoding!")
 
     dst_video_uri = osp.join(dst_video_folder, f'{result_video_name}.mp4')
     os.chdir(dst_video_folder)
-    cmd = f"{settings.ffmpeg_settings['ffmpeg_path']} " \
-          f"-r {encoding_params['video_fps']} " \
-          f"-start_number 0 " \
-          f"-i %d.png " \
-          f"-threads {settings.ffmpeg_settings['thread']} " \
-          f"-preset {encoding_params['preset']} " \
-          f"-c:v {encoding_params['encoder']} " \
-          f"-g {encoding_params['gop']} " \
-          f"-bf {encoding_params['bf']} " \
-          f"-qp {encoding_params['qp_list'][0]} " \
-          f"-y {dst_video_uri} " \
-          f"-loglevel {settings.ffmpeg_settings['loglevel']}"
+
+    # Optimized encoding parameters
+    encoder = encoding_params.get('encoder', 'libx264')
+    preset = encoding_params.get('preset', 'slow')
+    gop = encoding_params.get('gop', 30)
+    qp = encoding_params.get('qp_list', [10])[0]
+
+    # Construct ffmpeg command with optimized parameters
+    cmd = (
+        f"{settings.ffmpeg_settings['ffmpeg_path']} "
+        f"-r {encoding_params['video_fps']} "
+        f"-start_number 0 "
+        f"-i %d.png "
+        f"-threads {settings.ffmpeg_settings['thread']} "
+        f"-c:v {encoder} "
+        f"-preset {preset} "
+        f"-g {gop} "
+        f"-bf 0 "
+        f"-crf {qp} "  # Use Constant Rate Factor (CRF) for quality-based encoding
+        f"-y {dst_video_uri} "
+        f"-loglevel {settings.ffmpeg_settings['loglevel']}"
+    )
     settings.logger.debug(cmd)
     os.system(cmd)
 
