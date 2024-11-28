@@ -54,4 +54,3 @@ streaming environment. Compatibility testing and optimization efforts are
 required to ensure consistent performance across different hardware
 configurations and platforms.
 
-There is always room for improvement.
